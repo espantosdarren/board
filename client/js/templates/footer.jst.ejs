@@ -72,7 +72,7 @@ if (_.isEmpty(role_links.where({
 								<li class="dropdown hidden-xs board-btn">
 									<a title="<%- i18next.t('Dashboard') %>" href="#" data-toggle="dropdown" class="btn btn-default js-show-boards-list">
 										<span>
-											<%- i18next.t("Boards") %>
+											<%- i18next.t("Mga Boards") %>
 										</span>
 										<span>
 											<i class="icon-collapse"></i>
@@ -83,8 +83,8 @@ if (_.isEmpty(role_links.where({
 										<% if(!_.isEmpty(role_links.where({slug: "view_board_search"}))){ %>
 											<li class="clearfix js-qsearch-container js-boards-list-container">
 												<div class="clearfix h6 col-xs-12">
-													<input type="text" placeholder="<%- i18next.t('Find boards by name...') %>" class="js-search-boards form-control" id="inputBoardSearch"
-													 title="Find boards by name...">
+													<input type="text" placeholder="<%- i18next.t('Maghanap ng mga boards ayon sa pangalan...') %>" class="js-search-boards form-control" id="inputBoardSearch"
+													 title="Maghanap ng mga boards ayon sa pangalan...">
 												</div>
 											</li>
 											<li class="divider"></li>
@@ -96,8 +96,8 @@ if (_.isEmpty(role_links.where({
 			}))) {
 		%>
 													<li class="clearfix js-closed-board-list dropdown dropdown-submenu dropdown js-boards-list-container-search">
-														<a href="#" class="js-board-dropdown dropdown-toggle js-open-popover js-closed-boards" data-toggle="dropdown" title="<%- i18next.t('Closed Boards') %>">
-															<%- i18next.t("Closed Boards") %>
+														<a href="#" class="js-board-dropdown dropdown-toggle js-open-popover js-closed-boards" data-toggle="dropdown" title="<%- i18next.t('Sarado na Mga Boards') %>">
+															<%- i18next.t("Sarado na Mga Boards") %>
 														</a>
 														<ul class="sidebar-boards-list js-closedboard-list  list-unstyled list-group dropdown-menu pre-scrollable vertical-scrollbar"></ul>
 													</li>
@@ -108,8 +108,8 @@ if (_.isEmpty(role_links.where({
 			}))) {
 		%>
 														<li class="clearfix js-board-dropdown js-stared-board-lists dropdown-submenu dropdown js-boards-list-container-search">
-															<a href="#" class="dropdown-toggle js-open-popover js-starred-boards" data-toggle="dropdown" title="<%- i18next.t('Starred Boards') %>">
-																<%- i18next.t("Starred Boards") %>
+															<a href="#" class="dropdown-toggle js-open-popover js-starred-boards" data-toggle="dropdown" title="<%- i18next.t('Mga Starred Board') %>">
+																<%- i18next.t("Mga Starred Board") %>
 															</a>
 															<ul class="sidebar-boards-list js-board-starred-list list-unstyled list-group dropdown-menu pre-scrollable vertical-scrollbar"></ul>
 														</li>
@@ -121,8 +121,8 @@ if (_.isEmpty(role_links.where({
 			}))) {
 		%>
 															<li class="clearfix js-my-board-lists dropdown-submenu dropdown js-boards-list-container-search">
-																<a href="#" class="js-board-dropdown dropdown-toggle js-open-popover js-my-boards-listing" data-toggle="dropdown" title="<%- i18next.t('My Boards') %>">
-																	<%- i18next.t("My Boards") %>
+																<a href="#" class="js-board-dropdown dropdown-toggle js-open-popover js-my-boards-listing" data-toggle="dropdown" title="<%- i18next.t('Aking Mga Boards') %>">
+																	<%- i18next.t("Aking Mga Boards") %>
 																</a>
 																<ul class="sidebar-boards-list js-myboard-list list-unstyled list-group dropdown-menu pre-scrollable vertical-scrollbar"></ul>
 															</li>
@@ -130,8 +130,8 @@ if (_.isEmpty(role_links.where({
 			} 		
 		%>
 																<li class="clearfix js-boards-list-container-search">
-																	<a href="#/boards" title="<%- i18next.t('Boards') %>">
-																		<%- i18next.t("Boards") %>
+																	<a href="#/boards" title="<%- i18next.t('Mga Boards') %>">
+																		<%- i18next.t("Mga Boards") %>
 																	</a>
 																</li>
 																<%
@@ -144,12 +144,12 @@ if (_.isEmpty(role_links.where({
 		%>
 																	<li class="divider js-boards-list-container-search"></li>
 																	<li class="js-boards-list-container-search dropdown clearfix">
-																		<a title="<%- i18next.t('Add Board or Organization') %>" class="dropdown-toggle js-show-organizations-board-from btn btn-link"
+																		<a title="<%- i18next.t('Magdagdag ng Lupon o Organisasyon') %>" class="dropdown-toggle js-show-organizations-board-from btn btn-link"
 																		 data-toggle="dropdown" href="#">
 																			<span class="pull-left">
 																				<i class="icon-plus"></i>
 																			</span>
-																			<%- i18next.t("Add Board or Organization") %>
+																			<%- i18next.t("Magdagdag ng Lupon o Organisasyon") %>
 																		</a>
 																		<ul role="menu" class="dropdown-menu dropdown-menu-right js-show-organizations-board-from-response js-dropdown-popup navbar-btn"></ul>
 																	</li>
