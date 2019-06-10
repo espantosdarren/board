@@ -66,23 +66,23 @@
 	<% } else if(typeof(user) != "undefined" && !_.isEmpty(current_param) && (current_param === 'activities' || current_param === 'users' || current_param === 'user_logins' || current_param === 'roles' || current_param === 'apps' || current_param === 'settings' || current_param === 'email_templates' || current_param === 'admin_boards_list'|| current_param === 'oauth_clients' || current_param === 'board_user_roles' || current_param === 'organization_user_roles')){%>
 		<% 
 	if(!_.isEmpty(current_param) && (current_param === 'activities')) {
-		current_title = i18next.t('Activities');
+		current_title = i18next.t('Mga Aktibidad');
 	} else if(!_.isEmpty(current_param) && (current_param === 'users')){ 
-		current_title = i18next.t('Users');
+		current_title = i18next.t('Mga gumagamit');
 	}else if(!_.isEmpty(current_param) && (current_param === 'user_logins')){ 
-		current_title = i18next.t('Users Logins');
+		current_title = i18next.t('Ang mga gumagamit ay nag-login');
 	} else if(!_.isEmpty(current_param) && (current_param === 'roles' || current_param === 'board_user_roles' || current_param === 'organization_user_roles')){ 
-		current_title = i18next.t('Roles');
+		current_title = i18next.t('Mga tungkulin');
 	} else if(!_.isEmpty(current_param) && (current_param === 'apps')){ 
 		current_title = i18next.t('Apps');
 	} else if(!_.isEmpty(current_param) && (current_param === 'settings')){ 
-		current_title = i18next.t('Settings');
+		current_title = i18next.t('Mga Setting');
 	} else if(!_.isEmpty(current_param) && (current_param === 'email_templates')){ 
-		current_title = i18next.t('Email Templates');
+		current_title = i18next.t('Mga Template ng Email');
 	} else if(!_.isEmpty(current_param) && (current_param === 'admin_boards_list')){ 
-		current_title = i18next.t('Boards');
+		current_title = i18next.t('Mga Boards');
 	} else if(!_.isEmpty(current_param) && (current_param === 'oauth_clients')){ 
-		current_title = i18next.t('Developer applications');
+		current_title = i18next.t('Mga application ng developer');
 	}
 %>
 
@@ -232,28 +232,28 @@
 					<div class="navbar-right clearfix">
 						<ul class="nav nav-pills navbar-left navbar-btn js-admin-panel-header">
 							<li class="js-admin-activity-menu navbar-btn">
-								<a title="<%- i18next.t('Activities') %>" href="#/activities">
-									<%- i18next.t("Activities") %>
+								<a title="<%- i18next.t('Mga Aktibidad') %>" href="#/activities">
+									<%- i18next.t("Mga Aktibidad") %>
 								</a>
 							</li>
 							<li class="js-admin-user-menu navbar-btn">
-								<a title="<%- i18next.t('Users') %>" href="#/users">
-									<%- i18next.t("Users") %>
+								<a title="<%- i18next.t('Mga gumagamit') %>" href="#/users">
+									<%- i18next.t("Mga gumagamit") %>
 								</a>
 							</li>
 							<li class="js-admin-users_logins-menu navbar-btn">
 								<a title="<%- i18next.t('Users Logins') %>" href="#/user_logins">
-									<%- i18next.t("User Logins") %>
+									<%- i18next.t("Ang mga gumagamit ay nag-login") %>
 								</a>
 							</li>
 							<li class="js-admin-role-menu navbar-btn">
-								<a title="<%- i18next.t('Roles') %>" href="#/roles">
-									<%- i18next.t("Roles") %>
+								<a title="<%- i18next.t('Mga tungkulin') %>" href="#/roles">
+									<%- i18next.t("Mga tungkulin") %>
 								</a>
 							</li>
 							<li class="js-admin-board-menu navbar-btn">
-								<a title="<%- i18next.t('Boards') %>" href="#/boards/list">
-									<%- i18next.t("Boards") %>
+								<a title="<%- i18next.t('Mga Boards') %>" href="#/boards/list">
+									<%- i18next.t("Mga Boards") %>
 								</a>
 							</li>
 							<li class="js-admin-app-menu navbar-btn">
@@ -262,18 +262,18 @@
 								</a>
 							</li>
 							<li class="js-admin-client-menu navbar-btn">
-								<a title="<%- i18next.t('Developer applications') %>" href="#/oauth_clients">
-									<%- i18next.t("Developer applications") %>
+								<a title="<%- i18next.t('Mga application ng developer') %>" href="#/oauth_clients">
+									<%- i18next.t("Mga application ng developer") %>
 								</a>
 							</li>
 							<li class="js-admin-setting-menu navbar-btn">
-								<a title="<%- i18next.t('Settings') %>" href="#/settings">
-									<%- i18next.t("Settings") %>
+								<a title="<%- i18next.t('Mga Setting') %>" href="#/settings">
+									<%- i18next.t("Mga Setting") %>
 								</a>
 							</li>
 							<li class="js-admin-email-menu navbar-btn">
-								<a title="<%- i18next.t('Email Templates') %>" href="#/email_templates">
-									<%- i18next.t("Email Templates") %>
+								<a title="<%- i18next.t('Mga Template ng Email') %>" href="#/email_templates">
+									<%- i18next.t("Mga Template ng Email") %>
 								</a>
 							</li>
 						</ul>
