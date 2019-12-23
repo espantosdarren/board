@@ -31,7 +31,8 @@ App.ShowCopyBoardView = Backbone.View.extend({
      * functions to fire on events (Mouse events, Keyboard Events, Frame/Object Events, Form Events, Drag Events, etc...)
      */
     events: {
-        'submit #BoardCopyForm': 'copyNewBoard'
+        'submit #BoardCopyForm': 'copyNewBoard',
+        'click .js-keep_card_trigger': 'KeepCardTrigger',
     },
     /**
      * render()
@@ -49,6 +50,25 @@ App.ShowCopyBoardView = Backbone.View.extend({
         return this;
     },
     /**
+     * KeepCardTrigger()
+     * enable/disable all the card option
+     * @param e
+     * @type Object(DOM event)
+     * @return false
+     *
+     */
+    KeepCardTrigger: function(e) {
+        var keepCards = this.$el.find('input[name="keepCards"]:checked').length > 0;
+        $('.js-keep_card_enable').each(function() {
+            $(this).prop("checked", keepCards);
+            if (keepCards) {
+                $(this).removeAttr("disabled");
+            } else {
+                $(this).attr("disabled", true);
+            }
+        });
+    },
+    /**
      * copyBoard()
      * copy the exisiting board
      * @param e
@@ -57,6 +77,7 @@ App.ShowCopyBoardView = Backbone.View.extend({
      *
      */
     copyNewBoard: function(e) {
+        $('#submitBoardCopy').attr('disabled', 'disabled');
         if (!$.trim($('#inputCopyBoardName').val()).length) {
             $('.error-msg').remove();
             $('<div class="error-msg text-primary h6">' + i18next.t('Whitespace is not allowed') + '</div>').insertAfter('#inputCopyBoardName');
@@ -72,6 +93,7 @@ App.ShowCopyBoardView = Backbone.View.extend({
             data.user_id = authuser.user.id;
             var board = new App.Board();
             board.url = api_url + 'boards/' + this.model.id + '/copy.json';
+            $('.js-back-to-sidebar').trigger('click');
             board.save(data, {
                 success: function(model, response) {
                     if (!_.isUndefined(board.get('id'))) {
@@ -79,10 +101,12 @@ App.ShowCopyBoardView = Backbone.View.extend({
                             trigger: true,
                             replace: true,
                         });
+                        location.reload();
                         self.flash('success', i18next.t('Board copied successfully.'));
                     } else {
                         self.flash('danger', i18next.t('Unable to copy the board.'));
                     }
+                    $('#submitBoardCopy').removeAttr("disabled");
                 }
             });
         }

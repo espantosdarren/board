@@ -50,7 +50,7 @@
 <% if(!_.isEmpty(board.attributes.organization_name)){ %>
 <div class="clearfix"> 
 <a href="#/board/<%- board.id %>"" class="small-user pull-left show"><img alt="[Image: Organization]" title="<%-board.attributes.organization_name%>" width="16" height="16" src="<%- logo_path %>"></a>
- <a class="col-xs-9 htruncate" title="<%-board.attributes.organization_name%>" href="#/board/<%- board.id %>"><%-board.attributes.organization_name%></a></div>
+ <a class="col-xs-9 htruncate" title="<%-board.attributes.organization_name%>" href="#/organization/<%- board.attributes.organization_id %>"><%-board.attributes.organization_name%></a></div>
  <% }else{%>
  <a class="col-xs-9 htruncate" title="-">-</a>
  <% }%>
@@ -174,28 +174,32 @@
 </td>
  
 <td class="text-center">
-	<%- board.attributes.list_count%>
+	<%- (parseInt(board.attributes.list_count) - parseInt(board.attributes.archived_list_count))%>
 </td>
 <td class="text-center">
 	<%- board.attributes.archived_list_count%>
 </td>
 <td class="text-center"> 
-	<%- board.attributes.card_count%> 
+	<%- (parseInt(board.attributes.card_count) - parseInt(board.attributes.archived_card_count))%> 
 </td> 
 <td class="text-center"> 
 	<%- board.attributes.archived_card_count%> 
 </td> 
 <td class="text-center">
-    <a href="#" class="js-no-action">
-		<% var created = parse_date(board.attributes.created, authuser, 'js-timeago1-admin-board-view-'+board.attributes.id); %>
-		<span class="js-timeago1-admin-board-view-<%- board.attributes.id %>"></span>
+    <a href="javascript:void(0);" class="js-no-action">
+		<% setInterval(function() {%>
+			<% parse_date(board.attributes.created, authuser, 'js-timeago1-admin-board-view-'+board.attributes.id); %>
+		<% }, 10000); %>
+		<span class="js-timeago1-admin-board-view-<%- board.attributes.id %>"><%= parse_date(board.attributes.created, authuser, 'js-timeago1-admin-board-view-'+board.attributes.id, true) %></span>
 	</a>
 	
 </td>
 <td class="text-center">
-    <a href="#" class="js-no-action">
-		<% var modified = parse_date(board.attributes.modified, authuser, 'js-timeago2-admin-board-view-'+board.attributes.id); %>
-		<span class="js-timeago2-admin-board-view-<%- board.attributes.id %>"></span>
+    <a href="javascript:void(0);" class="js-no-action">
+		<% setInterval(function() {%>
+			<% parse_date(board.attributes.modified, authuser, 'js-timeago2-admin-board-view-'+board.attributes.id); %>
+		<% }, 10000); %>
+		<span class="js-timeago2-admin-board-view-<%- board.attributes.id %>"><%= parse_date(board.attributes.modified, authuser, 'js-timeago2-admin-board-view-'+board.attributes.id, true) %></span>
 	</a>
 </td>
 <td class="text-center">
@@ -219,7 +223,7 @@
 			
 			<ul class="dropdown-menu arrow arrow-right col-xs-push-0 pre-scrollable vertical-scrollbar">
 				<li class="js-visibility-popup js-dropdown-popup dropdown-popup col-xs-12">          
-					<div class="clearfix text-center"><a class="js-back-to-board-visibility hide pull-left" href="#"><i class="icon-caret-left"></i></a><span class="col-xs-10"><strong><%- i18next.t("Change Visibility") %></strong></span><a class="js-close-popover pull-right" href="#"><i class="icon-remove"></i></a>
+					<div class="clearfix text-center"><a class="js-back-to-board-visibility hide pull-left" href="javascript:void(0);"><i class="icon-caret-left"></i></a><span class="col-xs-10"><strong><%- i18next.t("Change Visibility") %></strong></span><a class="js-close-popover pull-right" href="#"><i class="icon-remove"></i></a>
 					</div>
 				</li>
 				<li class="col-xs-12 divider js-visibility-list"></li>

@@ -76,7 +76,11 @@ App.LoginView = Backbone.View.extend({
                         self.flash('danger', i18next.t('Sorry, login failed. Internet connection not available.'));
                     } else if (response.code === 'LDAP' && response.error === 'ERROR_LDAP_USER_LIMIT_EXCEED') {
                         self.flash('danger', i18next.t('Sorry, LDAP users limit exceed.'));
-                    } else if (response.code === 'email' || (response.code === 'LDAP' && (response.error === 'ERROR_LDAP_SERVER_CONNECT_FAILED' || response.error === 'ERROR_LDAP_EMAIL_NOT_ASSOCIATED'))) {
+                    } else if (response.error === 'ERROR_LDAP_SERVER_CONNECT_FAILED') {
+                        self.flash('danger', i18next.t('Error in LDAP connection. Please contact your system administrator.'));
+                    } else if (response.error === 'ERROR_LDAP_AUTH_FAILED') {
+                        self.flash('danger', i18next.t('Error in LDAP bind. Please contact your system administrator.'));
+                    } else if (response.code === 'email' || (response.code === 'LDAP' && (response.error === 'ERROR_LDAP_EMAIL_NOT_ASSOCIATED' || response.error === 'ERROR_LDAP_PASSWORD_NOT_ASSOCIATED'))) {
                         $('input#inputPassword', target).val('');
                         self.flash('danger', i18next.t('Sorry, login failed. Either your username or password are incorrect or admin deactivated your account.'));
                     } else {
@@ -94,6 +98,7 @@ App.LoginView = Backbone.View.extend({
                                 auth_response.user.role_id = response.user.role_id;
                                 auth_response.user.username = response.user.username;
                                 auth_response.user.full_name = response.user.full_name;
+                                auth_response.user.persist_card_divider_position = response.user.persist_card_divider_position;
                                 auth_response.user.timezone = response.user.timezone;
                                 auth_response.board_id = response.board_id;
                                 auth_response.user.notify_count = response.user.notify_count;
@@ -118,6 +123,18 @@ App.LoginView = Backbone.View.extend({
                                 role_links.reset();
                                 if (!_.isEmpty(links)) {
                                     role_links.add(links);
+                                }
+                                if (!_.isUndefined(APPS) && APPS !== null && !_.isEmpty(APPS.enabled_apps) && !_.isUndefined(APPS.enabled_apps) && APPS.enabled_apps !== null) {
+                                    APPS.permission_checked_apps = [];
+                                    _.each(APPS.enabled_apps, function(app) {
+                                        if (!_.isEmpty(authuser.user) && !_.isUndefined(authuser.user)) {
+                                            if ((!_.isEmpty(role_links.where({
+                                                    slug: app
+                                                })) || parseInt(authuser.user.role_id) === 1) && $.inArray(app, APPS.permission_checked_apps) === -1) {
+                                                APPS.permission_checked_apps.push(app);
+                                            }
+                                        }
+                                    });
                                 }
                                 auth_user_organizations.add(authuser.user.organizations);
                                 self.changeFavicon(response.user.notify_count);
@@ -152,7 +169,13 @@ App.LoginView = Backbone.View.extend({
      *
      */
     render: function() {
-        this.$el.html(this.template());
+        var ldap_servers = [];
+        if (!_.isUndefined(R_MLDAP_SERVERS) && !_.isEmpty(R_MLDAP_SERVERS)) {
+            ldap_servers = R_MLDAP_SERVERS.split(',');
+        }
+        this.$el.html(this.template({
+            ldap_servers: ldap_servers
+        }));
         this.showTooltip();
         return this;
     },

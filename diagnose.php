@@ -118,32 +118,35 @@ if (file_exists(APP_PATH . '/client/apps/r_ldap_login/app.json')) {
     $g_ldap_bind_dn = R_LDAP_LOGIN_BIND_DN;
     $g_ldap_bind_passwd = R_LDAP_LOGIN_BIND_PASSWORD;
     $t_ldap_server = ($g_enable_ssl_connectivity == 'true') ? 'ldaps://' . $g_ldap_server : 'ldap://' . $g_ldap_server;
-    $t_ds = ldap_connect($t_ldap_server, $g_ldap_port);
     $ldap_connection_class = false;
-    if ($t_ds > 0) {
-        if ($g_ldap_protocol_version > 0) {
-            ldap_set_option($t_ds, LDAP_OPT_PROTOCOL_VERSION, $g_ldap_protocol_version);
-        }
-        if (!empty($g_ldap_bind_dn) && !empty($g_ldap_bind_passwd)) {
-            $t_br = ldap_bind($t_ds, $g_ldap_bind_dn, str_rot13(base64_decode($g_ldap_bind_passwd)));
+    $ldap_connection = '';
+    if (function_exists('ldap_connect')) {
+        $t_ds = ldap_connect($t_ldap_server, $g_ldap_port);
+        if ($t_ds > 0) {
+            if ($g_ldap_protocol_version > 0) {
+                ldap_set_option($t_ds, LDAP_OPT_PROTOCOL_VERSION, $g_ldap_protocol_version);
+            }
+            if (!empty($g_ldap_bind_dn) && !empty($g_ldap_bind_passwd)) {
+                $t_br = ldap_bind($t_ds, $g_ldap_bind_dn, str_rot13(base64_decode($g_ldap_bind_passwd)));
+            } else {
+                $t_br = ldap_bind($t_ds);
+            }
+            if ($t_br) {
+                $ldap_connection = 'Success';
+                $ldap_connection_class = true;
+            } else {
+                $ldap_connection = 'ERROR_LDAP_AUTH_FAILED';
+            }
         } else {
-            $t_br = ldap_bind($t_ds);
+            $ldap_connection = 'ERROR_LDAP_SERVER_CONNECT_FAILED';
         }
-        if ($t_br) {
-            $ldap_connection = 'Success';
-            $ldap_connection_class = true;
-        } else {
-            $ldap_connection = 'ERROR_LDAP_AUTH_FAILED';
-        }
-    } else {
-        $ldap_connection = 'ERROR_LDAP_SERVER_CONNECT_FAILED';
     }
 }
 if (file_exists(APP_PATH . '/client/apps/r_elasticsearch/app.json')) {
     $is_having_elasticsearch_plugin = true;
     $elasticsearch_server_class = $elasticsearch_port_class = $elasticsearch_index_class = $elasticsearch_class = false;
     $elasticsearch_version = $elasticsearch_connection = '';
-    $elasticsearch_json = file_get_contents(APP_PATH . '/client/apps/r_elasticsearch/app.json');
+    $elasticsearch_json = file_get_contents(APP_PATH . DS .'client' . DS . 'apps' . DS . 'r_elasticsearch' . DS . 'app.json');
     $elasticsearch_data = json_decode($elasticsearch_json, true);
     if ($elasticsearch_data['settings']['r_elasticsearch_server_host']['value'] != 'REPLACE_ELASTIC_SEARCH_SERVER_HOST') {
         $elasticsearch_server_class = $elasticsearch_data['settings']['r_elasticsearch_server_host']['value'];
@@ -173,9 +176,9 @@ if (file_exists(APP_PATH . '/client/apps/r_elasticsearch/app.json')) {
     }
 }
 $_writable_folders = array(
-    APP_PATH . '/tmp',
-    APP_PATH . '/media',
-    APP_PATH . '/client/img'
+    TMP_PATH,
+    MEDIA_PATH,
+    IMG_PATH
 );
 $writable = '';
 foreach($_writable_folders as $folder) {
@@ -186,21 +189,14 @@ foreach($_writable_folders as $folder) {
     }
 }
 $_writable_files = array(
-    APP_PATH . '/server/php/shell/card_due_notification.sh',
-    APP_PATH . '/server/php/shell/imap.sh',
-    APP_PATH . '/server/php/shell/instant_email_notification.sh',
-    APP_PATH . '/server/php/shell/periodic_email_notification.sh',
-    APP_PATH . '/server/php/shell/webhook.sh',
-    APP_PATH . '/server/php/plugins/Chat/shell/chat_activities.sh',
-    APP_PATH . '/server/php/plugins/Chat/shell/periodic_chat_email_notification.sh',
-    APP_PATH . '/server/php/plugins/ElasticSearch/shell/indexing_to_elasticsearch.sh',
+    APP_PATH . '/server/php/shell/main.sh'
 );
 foreach($_writable_files as $file) {
     if (file_exists($file)) {
-        if (is_writable($file)) {
-            $writable.= '<tr><td> ' . $file . '</td><td class="green">Writable</td></tr>';
+        if (is_executable($file)) {
+            $writable.= '<tr><td> ' . $file . '</td><td class="green">Executable</td></tr>';
         } else {
-            $writable.= '<tr><td>' . $file . '</td><td class="red">Not Writable</td></tr>';
+            $writable.= '<tr><td>' . $file . '</td><td class="red">Not Executable</td></tr>';
         }
     }
 }

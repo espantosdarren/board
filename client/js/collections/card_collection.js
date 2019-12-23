@@ -13,19 +13,20 @@ App.CardCollection = Backbone.Collection.extend({
     comparator: function(item) {
         if (!_.isUndefined(this.sortKey)) {
             if (this.sortKey === 'name' || this.sortKey === 'list_name' || sort_by === 'sort_group_label' || sort_by === 'sort_group_user') {
-                var str = '' + item.get(this.sortKey);
+                var str = '' + item.get(this.sortKey),
+                    direction = this.sortDirection;
                 str = str.toLowerCase();
                 str = str.split('');
                 str = _.map(str, function(letter) {
-                    if (this.sortDirection === 'desc') {
+                    if (direction === 'desc') {
                         return String.fromCharCode(-(letter.charCodeAt(0)));
                     } else {
                         return String.fromCharCode((letter.charCodeAt(0)));
                     }
                 });
                 return str;
-            } else if (this.sortKey === 'due_date' || this.sortKey === 'list_moved_date') {
-                if (item.get(this.sortKey) !== null && !_.isUndefined(item.get(this.sortKey)) && !_.isEmpty(item.get(this.sortKey))) {
+            } else if (this.sortKey === 'due_date' || this.sortKey === 'list_moved_date' || this.sortKey === 'modified') {
+                if (item.get(this.sortKey) !== null && item.get(this.sortKey) !== 'NULL' && !_.isUndefined(item.get(this.sortKey)) && !_.isEmpty(item.get(this.sortKey))) {
                     var date = item.get(this.sortKey).split(' ');
                     if (!_.isUndefined(date[1])) {
                         _date = date[0] + 'T' + date[1];
@@ -50,13 +51,15 @@ App.CardCollection = Backbone.Collection.extend({
                 if (item.get('custom_fields') !== null && !_.isUndefined(item.get('custom_fields')) && !_.isEmpty(item.get('custom_fields'))) {
                     var inputArr = item.get('custom_fields');
                     var start_date_time = JSON.parse(inputArr);
-                    if (!_.isUndefined(start_date_time.start_date)) {
+                    if (!_.isUndefined(start_date_time.start_date) && !_.isEmpty(start_date_time.start_date) && !_.isUndefined(start_date_time.start_time) && !_.isEmpty(start_date_time.start_time)) {
                         _date = start_date_time.start_date + 'T' + start_date_time.start_time;
-                    } else {
-                        _date = start_date_time.start_date;
+                        sort_date = new Date(_date);
+                        return this.sortDirection === 'desc' ? -sort_date.getTime() : sort_date.getTime();
                     }
-                    sort_date = new Date(_date);
-                    return this.sortDirection === 'desc' ? -sort_date.getTime() : sort_date.getTime();
+                }
+            } else if (this.sortKey === 'checklist_item_completed_count' || this.sortKey === 'checklist_item_pending_count') {
+                if (!_.isUndefined(item.checklists) && !_.isEmpty(item.checklists) && item.checklists !== null) {
+                    return this.sortDirection === 'desc' ? -item.get(this.sortKey) : item.get(this.sortKey);
                 }
             } else {
                 if (this.sortDirection === 'desc') {

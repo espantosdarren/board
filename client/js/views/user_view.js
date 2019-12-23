@@ -16,6 +16,7 @@ if (typeof App === 'undefined') {
 App.UserView = Backbone.View.extend({
     template: JST['templates/user_view'],
     tagName: 'div',
+    id: 'user_view',
     className: '',
     /**
      * Events
@@ -34,7 +35,8 @@ App.UserView = Backbone.View.extend({
         'change #js-user-profile-attachment': 'addUserProfile',
         'click .js-enable-user-desktop-notification': 'enabledesktopNotification',
         'click .js-enable-twoFactor-authentication': 'enableAuthentication',
-        'click .js-disable-twoFactor-authentication': 'disableAuthentication'
+        'click .js-disable-twoFactor-authentication': 'disableAuthentication',
+        'click #js-profile_tab_trigger': 'TriggerSettingtab',
 
     },
     /**
@@ -61,6 +63,12 @@ App.UserView = Backbone.View.extend({
         if (!_.isUndefined(this.model) && this.model !== null) {
             this.model.showImage = this.showImage;
         }
+        this.profile_tab_title = {
+            'profile': i18next.t('Profile'),
+            'cards': i18next.t('Cards'),
+            'settings': i18next.t('Settings'),
+            'oauth_applications': i18next.t('Authorized OAuth Applications')
+        };
         this.render();
     },
     /**
@@ -73,17 +81,34 @@ App.UserView = Backbone.View.extend({
     enabledesktopNotification: function(e) {
         e.preventDefault();
         var self = this;
-        Notification.requestPermission(function(permission) {
-            // Whatever the user answers, we make sure we store the information
-            if (!('permission' in Notification)) {
-                Notification.permission = permission;
-            }
-            // If the user is okay, let's create a notification
-            if (permission === 'granted') {
-                var notification = new Notification('Desktop notification enabled.');
-                location.reload();
-            }
+        if (!_.isUndefined(Notification)) {
+            Notification.requestPermission(function(permission) {
+                // Whatever the user answers, we make sure we store the information
+                if (!('permission' in Notification)) {
+                    Notification.permission = permission;
+                }
+                // If the user is okay, let's create a notification
+                if (permission === 'granted') {
+                    var notification = new Notification('Desktop notification enabled.');
+                    location.reload();
+                }
+            });
+        }
+    },
+    /** 
+     * TriggerSettingtab()
+     * trigger email templates
+     * @return false
+     */
+    TriggerSettingtab: function(e) {
+        e.preventDefault();
+        var self = this;
+        app.navigate('#/' + 'user/' + self.model.id + '/' + $(e.currentTarget).data('profile_tab_id'), {
+            trigger: false,
+            trigger_function: false,
         });
+        this.type = $(e.currentTarget).data('profile_tab_id');
+        this.render();
     },
     /**
      * enableAuthentication()
@@ -165,7 +190,7 @@ App.UserView = Backbone.View.extend({
             this.renderType();
         } else {
             var self = this;
-            changeTitle('User - ' + _.escape(this.model.attributes.username));
+            changeTitle('User - ' + _.escape(this.model.attributes.username) + ' - ' + this.profile_tab_title[this.type]);
             var activities = new App.ActivityCollection();
             activities.url = api_url + 'users/' + self.model.id + '/activities.json?&type=profile';
             activities.fetch({
@@ -181,7 +206,11 @@ App.UserView = Backbone.View.extend({
                             return activity.id;
                         });
                         last_activity_id = last_activity.id;
-                        $('#js-user-activites-load-more').removeClass('hide');
+                        if (!response._metadata.noOfPages || response._metadata.noOfPages <= 1) {
+                            self.$('#js-user-activites-load-more').remove();
+                        } else {
+                            $('#js-user-activites-load-more').removeClass('hide');
+                        }
                         for (var i = 0; i < activities.models.length; i++) {
                             var activity = activities.models[i];
                             self.$('#js-user-activites').append(new App.UserActivityView({
@@ -210,7 +239,12 @@ App.UserView = Backbone.View.extend({
      *
      */
     renderType: function() {
+        if (!_.isUndefined(App.boards) && !_.isUndefined(App.boards) && !_.isUndefined(App.boards.sortField) && App.boards.sortField !== null && App.boards.sortField !== 'name') {
+            App.boards.setSortField('name', 'asc');
+            App.boards.sort();
+        }
         var is_send_newsletter_val = this.model.attributes.is_send_newsletter;
+        changeTitle('User - ' + _.escape(this.model.attributes.username) + ' - ' + this.profile_tab_title[this.type]);
         this.$el.html(this.template({
             user: this.model,
             type: this.type,
@@ -290,6 +324,7 @@ App.UserView = Backbone.View.extend({
         var self = this;
         var form = $(e.target);
         var fileData = new FormData(form[0]);
+        fileData.delete("attachment");
         var data = $(e.target).serializeObject();
         data.default_desktop_notification = 'false';
         if ($("#default_desktop_notification").val() === 'Enabled') {
@@ -379,6 +414,20 @@ App.UserView = Backbone.View.extend({
                         $.cookie('auth', JSON.stringify(Auth));
                         authuser = Auth;
                     }
+                    if (!_.isUndefined(response.activity.full_name) && response.activity.full_name !== null) {
+                        self.model.set('full_name', response.activity.full_name);
+                        Auth = JSON.parse($.cookie('auth'));
+                        Auth.user.full_name = response.activity.full_name;
+                        $.cookie('auth', JSON.stringify(Auth));
+                        authuser = Auth;
+                    }
+                    if (!_.isUndefined(response.activity.initials) && response.activity.initials !== null) {
+                        self.model.set('initials', response.activity.initials);
+                        Auth = JSON.parse($.cookie('auth'));
+                        Auth.user.initials = response.activity.initials;
+                        $.cookie('auth', JSON.stringify(Auth));
+                        authuser = Auth;
+                    }
                     if (!_.isUndefined(response.activity.profile_picture_path) && response.activity.profile_picture_path !== null) {
                         self.model.set('profile_picture_path', response.activity.profile_picture_path);
                         Auth = JSON.parse($.cookie('auth'));
@@ -444,6 +493,8 @@ App.UserView = Backbone.View.extend({
      */
     userCards: function(e, param) {
         var self = this;
+        self.$('#cards').html('');
+        self.$('#created-cards').html('');
         if (self.$('.js-membered-cards-tab').hasClass('active')) {
             self.$('.js-userCreated-cards-tab').removeClass('active');
             self.$('.js-membered-cards-tabContent').addClass('active');
@@ -459,13 +510,12 @@ App.UserView = Backbone.View.extend({
         self.model.cards.fetch({
             cache: false,
             success: function(card, response) {
-                self.$('#cards').html('');
                 if (!_.isUndefined(param) && !_.isEmpty(param)) {
                     self.$('#cards').html('<div class="pull-right well-sm"><a href="javascript:void(0);" class="btn btn-primary js-hide-closedBoards-cards" title="' + i18next.t('Hide Closed Boards Cards') + '">' + i18next.t('Hide Closed Boards Cards') + '</a></div>');
                 } else {
                     self.$('#cards').html('<div class="pull-right well-sm"><a href="javascript:void(0);" class="btn btn-primary js-show-closedBoards-cards" title="' + i18next.t('Show Closed Boards Cards') + '">' + i18next.t('Show Closed Boards Cards') + '</a></div>');
                 }
-                self.$('#created-cards').html('');
+                $('body').trigger('IcalfeedRendered');
                 if (response.length === 0) {
                     self.$('#cards').html('<span class="alert alert-info col-xs-12">' + i18next.t('No %s available.', {
                         postProcess: 'sprintf',
@@ -519,14 +569,14 @@ App.UserView = Backbone.View.extend({
     },
     userCreatedCards: function() {
         var self = this;
+        self.$('#cards').html('');
+        self.$('#created-cards').html('');
         self.$('.js-userCreated-cards-tab').addClass('active');
         self.$('.js-membered-cards-tab').removeClass('active');
         self.model.cards.url = api_url + 'users/' + self.model.id + '/cards.json?type=created';
         self.model.cards.fetch({
             cache: false,
             success: function(card, response) {
-                self.$('#cards').html('');
-                self.$('#created-cards').html('');
                 self.$('.js-userCreated-cards-tabContent').addClass('active');
                 self.$('.js-membered-cards-tabContent').removeClass('active');
                 var card_users = new App.CardUserCollection();
@@ -540,6 +590,7 @@ App.UserView = Backbone.View.extend({
                             model: card_user
                         }).el);
                     });
+                    $('body').trigger('IcalfeedRendered');
                 } else {
                     self.$('#created-cards').html('<span class="alert alert-info col-xs-12">' + i18next.t('No %s available.', {
                         postProcess: 'sprintf',
@@ -563,6 +614,9 @@ App.UserView = Backbone.View.extend({
             cache: false,
             success: function(user, response) {
                 if (!_.isEmpty(activities) && !_.isEmpty(activities.models)) {
+                    if (!response._metadata.noOfPages || response._metadata.noOfPages <= 1) {
+                        self.$('#js-user-activites-load-more').remove();
+                    }
                     for (var i = 0; i < activities.models.length; i++) {
                         var activity = activities.models[i];
                         self.$('#js-user-activites').append(new App.UserActivityView({
@@ -665,9 +719,9 @@ App.UserView = Backbone.View.extend({
                     Auth.user.profile_picture_path = response.profile_picture_path + "?uid=" + Math.floor((Math.random() * 9999) + 1);
                     $.cookie('auth', JSON.stringify(Auth));
                     authuser = Auth;
-                    var hash = calcMD5(SecuritySalt + 'User' + self.model.id + 'png' + 'small_thumb');
-                    var profile_picture_path = window.location.pathname + 'img/small_thumb/User/' + self.model.id + '.' + hash + '.png?uid=' + Math.floor((Math.random() * 9999) + 1);
-                    $('.js-use-uploaded-avatar').html('<span class="js-remove-image  profile-block show"><i class="icon icon-remove close-block cur h6"></i></span><img src="' + profile_picture_path + '" width="50" height="50" class="js-user-avatar">');
+                    var hash = calcMD5(SecuritySalt + 'User' + self.model.id + 'png' + 'normal_thumb');
+                    var profile_picture_path = window.location.pathname + 'img/normal_thumb/User/' + self.model.id + '.' + hash + '.png?uid=' + Math.floor((Math.random() * 9999) + 1);
+                    $('.js-use-uploaded-avatar').html('<span class="js-remove-image  profile-block show"><i class="icon icon-remove close-block cur h6"></i></span><img src="' + profile_picture_path + '" width="64" height="64" class="js-user-avatar">');
                     this.footerView = new App.FooterView({
                         model: Auth,
                     }).render();

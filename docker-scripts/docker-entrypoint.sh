@@ -31,7 +31,7 @@ if [ "$1" = 'start' ]; then
       -e '$ a myorigin = $mydomain' \
       -e '$ a mydestination = localhost, $myhostname, localhost.$mydomain' \
       -e '$ a sender_canonical_maps = hash:/etc/postfix/sender_canonical' \
-      -e "s/#relayhost =.*$/relayhost = [${SMTP_SERVER}]:${SMTP_PORT}/" \
+      -e "s/relayhost =.*$/relayhost = [${SMTP_SERVER}]:${SMTP_PORT}/" \
       -e '/smtp_.*/d' \
       -e '$ a smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache' \
       -e '$ a smtp_sasl_auth_enable = yes' \
@@ -64,11 +64,7 @@ if [ "$1" = 'start' ]; then
   set -e
 
   # cron shell
-  echo "*/5 * * * * ${ROOT_DIR}/server/php/shell/instant_email_notification.sh" >> /var/spool/cron/crontabs/root
-  echo "0 * * * * ${ROOT_DIR}/server/php/shell/periodic_email_notification.sh" >> /var/spool/cron/crontabs/root
-  echo "*/30 * * * * ${ROOT_DIR}/server/php/shell/imap.sh" >> /var/spool/cron/crontabs/root
-  echo "*/5 * * * * ${ROOT_DIR}/server/php/shell/webhook.sh" >> /var/spool/cron/crontabs/root
-  echo "*/5 * * * * ${ROOT_DIR}/server/php/shell/card_due_notification.sh" >> /var/spool/cron/crontabs/root
+  echo "*/5 * * * * ${ROOT_DIR}/server/php/shell/main.sh" >> /var/spool/cron/crontabs/root
 
   # service start
   service cron start

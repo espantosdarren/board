@@ -57,7 +57,7 @@
 				</section>
 				<section id="broadcast_hide_arrow" class="hide hidden-xs">
 					<a href="#" class="broadcast-content-show js-broadcast-show pull-right" title="show">
-						<i class="icon-angle-up"></i>
+						<i class="icon-angle-down"></i>
 					</a>
 				</section>
 			<% } %>
@@ -97,7 +97,7 @@
 						<span class="icon-bar"></span>
 					</button>
 					<div class="clearfix navbar-left">
-						<h1 class="navbar-left navbar-btn mob-no-mar clearfix">
+						<h1 class="navbar-left navbar-btn mob-no-mar clearfix header-logo">
 							<div class="navbar-left">
 								<a href="#/boards" title="<%- SITE_NAME %>">
 									<img src="img/logo.png" alt="[Image: <%- SITE_NAME %>]" title="<%- SITE_NAME %>" class="img-responsive center-block">
@@ -136,7 +136,7 @@
 											</strong>
 										</li>
 										<li class="divider"></li>
-										<li>
+										<li class="js-sort-by-users">
 											<a title="<%- i18next.t('Username') %>" href="#" class="js-sort-by" data-field="username">
 												<%- i18next.t("Username") %>
 											</a>
@@ -146,13 +146,13 @@
 												<%- i18next.t("Mga tungkulin") %>
 											</a>
 											<ul class="dropdown-menu">
-												<li class="inner-dropdown dropdown">
+												<li class="inner-dropdown dropdown js-sort-by-users">
 													<a title="<%- i18next.t('Admin (%s)', { postProcess: 'sprintf', sprintf: [this.admin_board_users]}) %>" href="#" class="js-sort-by"
 													 data-field="role_id">
 														<%- i18next.t("Admin (%s)", { postProcess: 'sprintf', sprintf: [this.admin_board_users]}) %>
 													</a>
 												</li>
-												<li class="inner-dropdown dropdown">
+												<li class="inner-dropdown dropdown js-sort-by-users">
 													<a title="<%- i18next.t('User (%s)', { postProcess: 'sprintf', sprintf: [this.normal_board_users]}) %>" href="#" class="js-sort-by"
 													 data-field="role_id">
 														<%- i18next.t("User (%s)", { postProcess: 'sprintf', sprintf: [this.normal_board_users]}) %>
@@ -165,13 +165,13 @@
 												<%- i18next.t("Mag log in") %>
 											</a>
 											<ul class="dropdown-menu">
-												<li class="inner-dropdown dropdown">
-													<a title="<%- i18next.t('Oras ng Pag-login') %>" href="#" class="js-sort-by" data-field="last_login_date">
-														<%- i18next.t("Oras") %>
+												<li class="inner-dropdown dropdown js-sort-by-users">
+													<a title="<%- i18next.t('Login Time') %>" href="#" class="js-sort-by" data-field="last_login_date">
+														<%- i18next.t("Time") %>
 													</a>
 												</li>
-												<li class="inner-dropdown dropdown">
-													<a title="<%- i18next.t('Mag-login IP') %>" href="#" class="js-sort-by" data-field="last_login_ip">
+												<li class="inner-dropdown dropdown js-sort-by-users">
+													<a title="<%- i18next.t('Login IP') %>" href="#" class="js-sort-by" data-field="last_login_ip">
 														<%- i18next.t("IP") %>
 													</a>
 												</li>
@@ -182,26 +182,26 @@
 												<%- i18next.t("Nakarehistro") %>
 											</a>
 											<ul class="dropdown-menu">
-												<li class="inner-dropdown dropdown">
-													<a title="<%- i18next.t('Oras') %>" href="#" class="js-sort-by" data-field="created">
-														<%- i18next.t("Oras") %>
+												<li class="inner-dropdown dropdown js-sort-by-users">
+													<a title="<%- i18next.t('Time') %>" href="#" class="js-sort-by" data-field="created">
+														<%- i18next.t("Time") %>
 													</a>
 												</li>
-												<li>
+												<li class="js-sort-by-users">
 													<a title="<%- i18next.t('IP') %>" href="#" class="js-sort-by" data-field="registered_ip">
 														<%- i18next.t("IP") %>
 													</a>
 												</li>
 											</ul>
 										</li>
-										<li>
-											<a title="<%- i18next.t('Bilang ng mga Organisasyon') %>" href="#" class="js-sort-by" data-field="joined_organization_count">
-												<%- i18next.t("Bilang ng mga Organisasyon") %>
+										<li class="js-sort-by-users">
+											<a title="<%- i18next.t('Organizations Count') %>" href="#" class="js-sort-by" data-field="joined_organization_count">
+												<%- i18next.t("Organizations Count") %>
 											</a>
 										</li>
-										<li>
-											<a title="<%- i18next.t('Bilang ng Lupon') %>" href="#" class="js-sort-by" data-field="joined_board_count">
-												<%- i18next.t("Bilang ng Lupon") %>
+										<li class="js-sort-by-users">
+											<a title="<%- i18next.t('Board Count') %>" href="#" class="js-sort-by" data-field="joined_board_count">
+												<%- i18next.t("Board Count") %>
 											</a>
 										</li>
 									</ul>
@@ -247,8 +247,8 @@
 								</a>
 							</li>
 							<li class="js-admin-role-menu navbar-btn">
-								<a title="<%- i18next.t('Mga tungkulin') %>" href="#/roles">
-									<%- i18next.t("Mga tungkulin") %>
+								<a title="<%- i18next.t('Roles') %>" href="#/roles?tab=users">
+									<%- i18next.t("Roles") %>
 								</a>
 							</li>
 							<li class="js-admin-board-menu navbar-btn">
@@ -286,7 +286,7 @@
 					</section>
 					<section id="broadcast_hide_arrow" class="hide hidden-xs">
 						<a href="#" class="broadcast-content-show js-broadcast-show pull-right" title="show">
-							<i class="icon-angle-up"></i>
+							<i class="icon-angle-down"></i>
 							</i>
 						</a>
 					</section>

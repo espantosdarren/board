@@ -5,8 +5,8 @@
  * @return string
  */
 require_once 'config.inc.php';
-require_once 'libs' . DIRECTORY_SEPARATOR . 'core.php';
-require_once 'libs' . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . 'OAuth2' . DIRECTORY_SEPARATOR . 'Autoloader.php';
+require_once 'libs' . DS . 'core.php';
+require_once 'libs' . DS . 'vendors' . DS . 'OAuth2' . DS . 'Autoloader.php';
 function main()
 {
     global $r_debug, $authUser, $token, $localAccessIps, $db_lnk, $token_exception_url, $exception_url, $scope_exception_url, $post_exception_url, $put_exception_url, $exception_before_token, $exception_url, $admin_access_url, $put_admin_access_url, $_server_domain_url, $locales;
@@ -44,11 +44,6 @@ function main()
         $r_resource_cmd = preg_replace('/\/\d+/', '/?', $_url_parts_with_ext[0]);
         header('Content-Type: application/json');
         if (!defined('STDIN') && !file_exists(CLIENT_INFORMATION) && !empty($_server_domain_url)) {
-            doPost('http://restya.com/clients', array(
-                'app' => 'board',
-                'ver' => '0.6.6',
-                'url' => $_server_domain_url
-            ));
             $fh = fopen(CLIENT_INFORMATION, 'a');
             fwrite($fh, '<?php' . "\n");
             fwrite($fh, '$_server_domain_url = \'' . $_server_domain_url . '\';');
@@ -62,16 +57,12 @@ function main()
                 );
                 $response = executeQuery("SELECT user_id as username, expires, scope, client_id FROM oauth_access_tokens WHERE access_token = $1", $conditions);
                 $expires = strtotime($response['expires']);
-                if (empty($response) || !empty($response['error']) || ($expires > 0 && $expires < time() && !in_array($response['client_id'], array(
-                    7857596005287233,
-                    1193674816623028,
-                    6664115227792148,
-                    6728003996146168,
-                    OAUTH_CLIENTID
-                )))) {
+                $clientresponse = executeQuery("SELECT is_expirable_token FROM oauth_clients WHERE client_id = $1", array(
+                    'client_id' => OAUTH_CLIENTID
+                ));
+                if (empty($response) || !empty($response['error']) || ($expires > 0 && $expires < time() && $clientresponse['is_expirable_token'] === 1)) {
                     $response['error']['type'] = 'OAuth';
                     header($_SERVER['SERVER_PROTOCOL'] . ' 401 Unauthorized', true, 401);
-                    echo json_encode($response);
                     exit;
                 }
                 $user = $role_links = array();
@@ -91,8 +82,8 @@ function main()
                 }
             }
         }
-        if (!empty($current_locale) && file_exists(APP_PATH . 'client' . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $current_locale . DIRECTORY_SEPARATOR . 'translation.json')) {
-            $locale = file_get_contents(APP_PATH . 'client' . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $current_locale . DIRECTORY_SEPARATOR . 'translation.json');
+        if (!empty($current_locale) && file_exists(APP_PATH . 'client' . DS . 'locales' . DS . $current_locale . DS . 'translation.json')) {
+            $locale = file_get_contents(APP_PATH . 'client' . DS . 'locales' . DS . $current_locale . DS . 'translation.json');
             $locales = json_decode($locale, true);
         }
         $r_resource_vars = array();
@@ -126,7 +117,7 @@ function main()
                     break;
 
                 case 'POST':
-                    if ((in_array('write', $scope) && ((!empty($authUser)) || (in_array($r_resource_cmd, $exception_url) && empty($authUser)))) || in_array($r_resource_cmd, $scope_exception_url)) {
+                    if ((in_array('write', $scope) && ((!empty($authUser)) || (in_array($r_resource_cmd, $exception_url) && empty($authUser))) || (is_plugin_enabled('r_support_app') && ($r_resource_cmd == '/card_support_users' || !empty($r_resource_vars['boards'])))) || in_array($r_resource_cmd, $scope_exception_url)) {
                         $r_post = json_decode(file_get_contents('php://input'));
                         $r_post = (array)$r_post;
                         r_post($r_resource_cmd, $r_resource_vars, $r_resource_filters, $r_post);

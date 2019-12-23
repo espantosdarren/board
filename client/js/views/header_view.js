@@ -78,10 +78,17 @@ App.HeaderView = Backbone.View.extend({
         if (typeof Notification != 'undefined') {
             this.model.is_show_enable_notification = (Notification.permission == 'default') ? true : false;
         }
+        current_param = this.model.current_param;
+        if (typeof(authuser) != "undefined" && !_.isEmpty(current_param) && (current_param === 'activities' || current_param === 'users' || current_param === 'user_logins' || current_param === 'roles' || current_param === 'apps' || current_param === 'settings' || current_param === 'email_templates' || current_param === 'admin_boards_list' || current_param === 'oauth_clients' || current_param === 'board_user_roles' || current_param === 'organization_user_roles')) {
+            this.$el.attr('id', 'admin-panel');
+        }
         this.$el.html(this.template(this.model));
         this.showTooltip();
         if (load_count === 1) {
             load_count++;
+            var nodes = Array();
+            var appsFunc = Array();
+            appsurlFunc = {};
             _.each(APPS, function(app, key) {
                 var s, l, v = '';
                 if (key === 'settings') {
@@ -114,28 +121,106 @@ App.HeaderView = Backbone.View.extend({
                 }
                 if (key === 'html') {
                     _.each(app, function(html, key) {
+                        /* create app template element */
+                        app_tmpl = document.createElement(html.split('/')[1] + '-template');
+                        document.head.appendChild(app_tmpl);
+                        /* create link for template element */
                         l = document.createElement('link');
-                        l.rel = 'import';
+                        l.setAttribute('crossorigin', 'anonymous');
+                        l.rel = 'preload';
+                        l.as = "fetch";
+                        l.id = html.split('/')[1] + '-template';
                         l.href = html;
-                        l.onload = function(e) {
-                            var content = e.target.import;
-                            var get_script = content.querySelectorAll("script");
-                            _.each(get_script, function(html, key) {
-                                document.body.appendChild(html.cloneNode(true));
-                            });
-                        };
                         document.head.appendChild(l);
                     });
                 }
+                if (key === 'mutationObservers') {
+                    _.each(app, function(appTmp) {
+                        _.each(appTmp, function(mutation, node) {
+                            if (_.isUndefined(nodes[node])) {
+                                nodes[node] = Array();
+                            }
+                            _.each(mutation, function(appFunction, targetElement) {
+                                if (nodes[node].indexOf(targetElement) === -1) {
+                                    nodes[node].push(targetElement);
+                                }
+                                if (_.isUndefined(appsFunc[targetElement])) {
+                                    appsFunc[targetElement] = Array();
+                                }
+                                appsFunc[targetElement].push(appFunction);
+                            });
+                        });
+                    });
+                }
+                if (key === 'urlChange') {
+                    _.each(app, function(appTmp) {
+                        _.each(appTmp, function(funct_name, appsUrl) {
+                            if (_.isUndefined(appsurlFunc[appsUrl])) {
+                                appsurlFunc[appsUrl] = Array();
+                            }
+                            if (appsurlFunc[appsUrl].indexOf(funct_name) === -1) {
+                                appsurlFunc[appsUrl].push(funct_name);
+                            } else {
+                                appsurlFunc[appsUrl] = Array();
+                                appsurlFunc[appsUrl].push(funct_name);
+                            }
+                        });
+                    });
+                }
             });
+            var whatToObserve = {
+                childList: true
+            };
+            var mutationObserver = new MutationObserver(function(mutationRecords) {
+                _.each(mutationRecords, function(mutationRecord) {
+                    if (mutationRecord.addedNodes.length > 0 && nodes[mutationRecord.target.id].indexOf(mutationRecord.addedNodes[0].id) !== -1) {
+                        setTimeout(function() {
+                            _(function() {
+                                _.each(appsFunc[mutationRecord.addedNodes[0].id], function(
+                                    functionName
+                                ) {
+                                    if (typeof AppsFunction[functionName] === 'function') {
+                                        AppsFunction[functionName]();
+                                    }
+                                });
+                            }).defer();
+                        }, 100);
+                    }
+                });
+            });
+            for (var node in nodes) {
+                var targetNode = document.getElementById(node);
+                mutationObserver.observe(targetNode, whatToObserve);
+            }
         }
         return this;
     },
     renderList: function() {
         var self = this;
-        self.current_page = (!_.isUndefined(self.current_page)) ? self.current_page : 1;
+        var url = location.hash;
+        url = url.replace('#/users?', '');
+        var query_param;
+        if (url.indexOf('filter') !== -1) {
+            query_param = url.split('&filter=');
+            page_no = query_param[0].replace('page=', '');
+            self.current_page = page_no + '&filter=' + query_param[1] + '&sort=' + self.sortField + '&direction=' + self.sortDirection;
+            self.current_param = query_param[1];
+        } else if (url.indexOf('page') !== -1) {
+            query_param = url.split('page=');
+            page_no = query_param[1].split('&sort=');
+            self.current_page = page_no[0] + '&sort=' + self.sortField + '&direction=' + self.sortDirection;
+            self.current_param = 'all';
+        } else {
+            self.current_page = 1 + '&sort=' + self.sortField + '&direction=' + self.sortDirection;
+            self.current_param = 'all';
+        }
         var users = new App.UserCollection();
+        users.setSortField(self.sortField, self.sortDirection);
         users.url = api_url + 'users.json?page=' + self.current_page;
+        app.navigate('#/' + 'users?page=' + self.current_page, {
+            trigger: false,
+            trigger_function: false,
+        });
         users.fetch({
             cache: false,
             abortPending: true,
@@ -145,20 +230,59 @@ App.HeaderView = Backbone.View.extend({
                     filter_count: response.filter_count,
                     roles: response.roles,
                     sortField: self.sortField,
-                    sortDirection: self.sortDirection
+                    sortDirection: self.sortDirection,
+                    'current_param': self.current_param
                 }).el);
+                $('.pagination-boxes').unbind();
+                $('.pagination-boxes').html('');
+                if (!_.isUndefined(response._metadata) && parseInt(response._metadata.noOfPages) > 1) {
+                    $('.pagination-boxes').pagination({
+                        total_pages: parseInt(response._metadata.noOfPages),
+                        current_page: parseInt(self.current_page),
+                        display_max: 4,
+                        callback: function(event, page) {
+                            event.preventDefault();
+                            if (page) {
+                                if (!_.isUndefined(self.current_param) && self.current_param !== null && self.current_param !== 'all') {
+                                    self.current_page = page + '&filter=' + self.current_param + '&sort=' + self.sortField + '&direction=' + self.sortDirection;
+                                    page = self.current_page;
+                                } else if (!_.isUndefined(self.current_param) && self.current_param !== null && self.current_param === 'all' && typeof self.current_page === 'string') {
+                                    var current_page = self.current_page.split('&sort=');
+                                    self.current_page = page + '&sort=' + current_page['1'];
+                                    page = self.current_page;
+                                } else {
+                                    self.current_page = page + '&sort=' + self.sortField + '&direction=' + self.sortDirection;
+                                    page = self.current_page;
+                                }
+                                app.navigate('#/' + 'users?page=' + page, {
+                                    trigger: true,
+                                    trigger_function: true,
+                                });
+                            }
+                        }
+                    });
+                }
             }
         });
     },
     sortBy: function(e) {
         e.preventDefault();
         var sortField = $(e.currentTarget).data('field');
+        if ($('.js-sort-by-users').hasClass('active')) {
+            $('.js-sort-by-users').removeClass('active');
+        }
+        $('.js-sort-down-users').remove();
+        $('.js-sort-up-users').remove();
+        $(e.target).parent().addClass('active');
         if (_.isUndefined(this.sortDirection)) {
+            $(e.target).html('<i class="icon icon-arrow-down js-sort-down-users"></i>' + i18next.t($(e.target).text()));
             this.sortDirection = 'desc';
         } else {
             if (this.sortDirection === 'desc') {
+                $(e.target).html('<i class="icon icon-arrow-up js-sort-up-users"></i>' + i18next.t($(e.target).text()));
                 this.sortDirection = 'asc';
             } else {
+                $(e.target).html('<i class="icon icon-arrow-down js-sort-down-users"></i>' + i18next.t($(e.target).text()));
                 this.sortDirection = 'desc';
             }
         }
